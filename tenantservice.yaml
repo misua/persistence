@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenantservice
+spec:
+  selector:
+    matchLabels:
+      app: tenantservice
+  replicas: 1
+  template: # template for the pods
+    metadata:
+      labels:
+        app: tenantservice
+    spec:
+      containers:
+      - name: tenantservice
+        image: docker.io/chazpogz/orekadb:v100
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: tenantservice
+spec:
+  selector:
+    app: tenantservice
+  ports:
+    - name: tenantserviceport 
+      port: 8085
+  type: ClusterIP
