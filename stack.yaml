@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pgdb
+spec:
+  serviceName: "postgres"
+  selector:
+    matchLabels:
+      app: pgdb
+  replicas: 2
+  template: # template for the pods
+    metadata:
+      labels:
+        app: pgdb
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:latest
+        env:
+            - name: POSTGRES_DB
+              value: tenantservice_staging
+            - name: POSTGRES_USER
+              value: presshostinguser
+            - name: POSTGRES_PASSWORD
+              value: presshostinguser
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+          - name: pg-persistent-storage
+            mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pg-persistent-storage
+          # pointer to the configuration of HOW we want the mount to be implemented
+          persistentVolumeClaim:
+            claimName: pg-pvc
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: tenantservice
+spec:
+  selector:
+    app: pgdb
+  ports:
+    - name: pgport
+      port: 5432
+  type: ClusterIP
